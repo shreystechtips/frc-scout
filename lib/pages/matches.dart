@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../helper/bluealliance.dart' as bluealliance;
 
 class Page extends StatefulWidget {
   const Page({super.key});
@@ -40,6 +41,9 @@ class _PageState extends State<Page> {
                   'Match ${items[index]['match']}: ${items[index]['teamnum']}'),
               subtitle: Text('Here is a second line ${items[index]['side']}'),
               onTap: () {
+                // bluealliance.TBARequest.getTeams().then((value) => print(value
+                //     .first
+                //     .nickname)); // TODO: Make this actually do something (like open a new page
                 showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -55,24 +59,6 @@ class _PageState extends State<Page> {
               });
         },
       ),
-      // Center(
-      //   child: Column(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     children: <Widget>[
-      //       const Text(
-      //         'You have pushed the button this many times:',
-      //       ),
-      //       Text(
-      //         '$_counter',
-      //         style: Theme.of(context).textTheme.headline4,
-      //       ),
-      //       ElevatedButton(
-      //         child: const Text("Reset Counter"),
-      //         onPressed: () => setState(() => _counter = 0),
-      //       ),
-      //     ],
-      //   ),
-      // ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',

@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'pages/matches.dart' as matches;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'helper/appdata.dart' as appdata;
 
-void main() {
-  runApp(const MyApp());
+Future main() async {
+  await dotenv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  appdata.AppData prefs = await appdata.AppData.create();
+
+  runApp(MyApp(
+    prefs: prefs,
+  ));
 }
 
 class MyApp extends StatefulWidget {
+  appdata.AppData prefs;
   @override
   State<MyApp> createState() => _PageState();
 
-  const MyApp({super.key});
+  MyApp({super.key, required this.prefs});
 }
 
 class _PageState extends State<MyApp> {
@@ -36,13 +45,15 @@ class _PageState extends State<MyApp> {
     )
   ];
   static const List<Widget> _pages = <Widget>[
+    matches.Page(),
     Icon(
       Icons.chat,
       size: 150,
     ),
-    matches.Page(),
-    matches.Page(),
-    matches.Page(),
+    Icon(
+      Icons.chat,
+      size: 150,
+    ),
   ];
 
   @override
