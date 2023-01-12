@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../helper/bluealliance.dart' as bluealliance;
 import '../helper/appdata.dart' as appdata;
+import '../helper/constants.dart' as constants;
+import 'dart:convert';
 
 class Page extends StatefulWidget {
   final appdata.AppData prefs;
@@ -22,10 +24,8 @@ class _PageState extends State<Page> {
 
   @override
   Widget build(BuildContext context) {
-    final items = List<Map<String, dynamic>>.generate(
-        10000,
-        (i) =>
-            {'teamnum': "Team name go brr - $i", 'side': 'red 2', 'match': i});
+    final items =
+        jsonDecode(widget.prefs.getString(constants.TEAM_KEY, def: '[]'));
     return Scaffold(
       // appBar: AppBar(
       //   title: Text(widget.title),
@@ -34,15 +34,13 @@ class _PageState extends State<Page> {
         itemCount: items.length,
         prototypeItem: const ListTile(
           visualDensity: VisualDensity(horizontal: 0, vertical: -4),
-          title: Text("Match 948: Newport Robotics Group 948"),
-          subtitle: Text('Red 1'),
+          title: Text("948 - Newport Robotics Group 948"),
         ),
         itemBuilder: (context, index) {
           return ListTile(
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
               title: Text(
-                  'Match ${items[index]['match']}: ${items[index]['teamnum']}'),
-              subtitle: Text('Here is a second line ${items[index]['side']}'),
+                  '${items[index]['team_number']}: ${items[index]['nickname']}'),
               onTap: () {
                 // bluealliance.TBARequest.getTeams().then((value) => print(value
                 //     .first

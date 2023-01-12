@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'pages/matches.dart' as matches;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'helper/appdata.dart' as appdata;
+import 'helper/constants.dart' as constants;
+import 'helper/bluealliance.dart' as bluealliance;
+import 'pages/teamselection.dart' as teamselection;
 
 Future main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   appdata.AppData prefs = await appdata.AppData.create();
+  if (prefs.getString(constants.TEAM_KEY) == '') {
+    bluealliance.TBARequest.getTeams(
+        save: true, prefs: prefs, key: constants.TEAM_KEY);
+  }
 
   runApp(MyApp(
     prefs: prefs,
@@ -44,26 +51,25 @@ class _PageState extends State<MyApp> {
       label: 'Pit Notes',
     )
   ];
-  static const List<Widget> _pages = <Widget>[
-    matches.Page(),
-    Icon(
-      Icons.chat,
-      size: 150,
-    ),
-    Icon(
-      Icons.chat,
-      size: 150,
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = <Widget>[
+      matches.Page(
+        prefs: widget.prefs,
+      ),
+      teamselection.Page(prefs: widget.prefs),
+      const Icon(
+        Icons.chat,
+        size: 150,
+      ),
+    ];
     Scaffold scaffold = Scaffold(
         appBar: AppBar(
           title: const Text('FRC Scout'),
         ),
         body: Center(
-          child: _pages.elementAt(_selectedIndex), //New
+          child: pages.elementAt(_selectedIndex), //New
         ),
         bottomNavigationBar: BottomNavigationBar(
             currentIndex: _selectedIndex,
