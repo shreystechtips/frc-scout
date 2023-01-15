@@ -9,9 +9,8 @@ const String TBABaseURI = 'https://www.thebluealliance.com/api/v3';
 
 class TBARequest {
   static final Map<String, String> requestHeaders = {
-    'Content-type': 'application/json',
     'Accept': 'application/json',
-    'X-TBA-Auth-Key': dotenv.env['TBA_KEY'].toString()
+    'X-TBA-Auth-Key': dotenv.env['TBA_KEY'].toString(),
   };
 
   static Future<List<Map<String, dynamic>>> getTeams(

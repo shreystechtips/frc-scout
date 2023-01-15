@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import '../helper/bluealliance.dart' as bluealliance;
 import '../helper/appdata.dart' as appdata;
 import '../helper/constants.dart' as constants;
@@ -14,6 +15,13 @@ class Page extends StatefulWidget {
 
 class _PageState extends State<Page> {
   int _counter = 0;
+  late List<dynamic> items;
+
+  @override
+  void initState() {
+    items = jsonDecode(widget.prefs.getString(constants.TEAM_KEY, def: '[]'));
+    super.initState();
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -24,42 +32,73 @@ class _PageState extends State<Page> {
 
   @override
   Widget build(BuildContext context) {
-    final items =
-        jsonDecode(widget.prefs.getString(constants.TEAM_KEY, def: '[]'));
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(widget.title),
-      // ),
-      body: ListView.builder(
-        itemCount: items.length,
-        prototypeItem: const ListTile(
-          visualDensity: VisualDensity(horizontal: 0, vertical: -4),
-          title: Text("948 - Newport Robotics Group 948"),
-        ),
-        itemBuilder: (context, index) {
-          return ListTile(
-              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-              title: Text(
-                  '${items[index]['team_number']}: ${items[index]['nickname']}'),
-              onTap: () {
-                // bluealliance.TBARequest.getTeams().then((value) => print(value
-                //     .first
-                //     .nickname)); // TODO: Make this actually do something (like open a new page
-                showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                          title: Text('Alert'),
-                          content: Text('This is an alert $index'),
-                          actions: [
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ],
-                        ));
-              });
-        },
-      ),
+      body: RefreshIndicator(
+          onRefresh: () {
+            return Future.delayed(const Duration(milliseconds: 0), () async {
+              bool repsonse = false;
+              await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                        title: const Text('Notice'),
+                        content: const Text(
+                            'Do you really want to refresh, this may take a bit'),
+                        actions: [
+                          TextButton(
+                            child: const Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              repsonse = true;
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('Cancel'),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ));
+              if (repsonse) {
+                await bluealliance.TBARequest.getTeams(
+                    save: true, prefs: widget.prefs, key: constants.TEAM_KEY);
+                setState(() {
+                  items = jsonDecode(
+                      widget.prefs.getString(constants.TEAM_KEY, def: '[]'));
+                });
+              }
+            });
+          },
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: items.length,
+            prototypeItem: const ListTile(
+              visualDensity: VisualDensity(horizontal: 0, vertical: -4),
+              title: Text("948 - Newport Robotics Group 948"),
+            ),
+            itemBuilder: (context, index) {
+              return ListTile(
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: Text(
+                      '${items[index]['team_number']}: ${items[index]['nickname']}'),
+                  onTap: () {
+                    // bluealliance.TBARequest.getTeams().then((value) => print(value
+                    //     .first
+                    //     .nickname)); // TODO: Make this actually do something (like open a new page
+                    showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                              title: Text('Alert'),
+                              content: Text('This is an alert $index'),
+                              actions: [
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ],
+                            ));
+                  });
+            },
+          )),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
