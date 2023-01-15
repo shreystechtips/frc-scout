@@ -14,20 +14,31 @@ class Page extends StatefulWidget {
 }
 
 class _PageState extends State<Page> {
-  int _counter = 0;
   late List<dynamic> items;
+  late List<dynamic> show_items;
+  TextEditingController txtQuery = new TextEditingController();
 
   @override
   void initState() {
     items = jsonDecode(widget.prefs.getString(constants.TEAM_KEY, def: '[]'));
+    show_items = items;
     super.initState();
   }
 
-  void _incrementCounter() {
-    setState(() {
-      widget.prefs.clear();
-      _counter++;
-    });
+  void search(String query) {
+    query = query.trim();
+    if (query.isEmpty) {
+      show_items = items;
+      setState(() {});
+      return;
+    }
+
+    query = query.toLowerCase();
+    show_items = items.where((element) {
+      return element['team_number'].toString().toLowerCase().contains(query) ||
+          element['nickname'].toLowerCase().contains(query);
+    }).toList();
+    setState(() {});
   }
 
   @override
@@ -63,44 +74,67 @@ class _PageState extends State<Page> {
                 setState(() {
                   items = jsonDecode(
                       widget.prefs.getString(constants.TEAM_KEY, def: '[]'));
+                  show_items = items;
                 });
               }
             });
           },
-          child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: items.length,
-            prototypeItem: const ListTile(
-              visualDensity: VisualDensity(horizontal: 0, vertical: -4),
-              title: Text("948 - Newport Robotics Group 948"),
-            ),
-            itemBuilder: (context, index) {
-              return ListTile(
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: Text(
-                      '${items[index]['team_number']}: ${items[index]['nickname']}'),
-                  onTap: () {
-                    // bluealliance.TBARequest.getTeams().then((value) => print(value
-                    //     .first
-                    //     .nickname)); // TODO: Make this actually do something (like open a new page
-                    showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                              title: Text('Alert'),
-                              content: Text('This is an alert $index'),
-                              actions: [
-                                TextButton(
-                                  child: Text('OK'),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                              ],
-                            ));
-                  });
-            },
-          )),
+          child: Column(
+              // mainAxisAlignment: MainAxisAlignment.start,
+              // crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextFormField(
+                  controller: txtQuery,
+                  onChanged: search,
+                  decoration: InputDecoration(
+                    hintText: "Search",
+                    prefixIcon: Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.clear),
+                      onPressed: () {
+                        txtQuery.text = '';
+                        search(txtQuery.text);
+                      },
+                    ),
+                  ),
+                ),
+                Expanded(
+                    child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: show_items.length,
+                  prototypeItem: const ListTile(
+                    visualDensity: VisualDensity(horizontal: 0, vertical: -4),
+                    title: Text("948 - Newport Robotics Group 948"),
+                  ),
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text(
+                            '${show_items[index]['team_number']}: ${show_items[index]['nickname']}'),
+                        onTap: () {
+                          // bluealliance.TBARequest.getTeams().then((value) => print(value
+                          //     .first
+                          //     .nickname)); // TODO: Make this actually do something (like open a new page
+                          showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                    title: const Text('Alert'),
+                                    content: Text('This is an alert $index'),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('OK'),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
+                                      ),
+                                    ],
+                                  ));
+                        });
+                  },
+                ))
+              ])),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: (() => {}),
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
