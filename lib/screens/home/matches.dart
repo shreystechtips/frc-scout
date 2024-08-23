@@ -44,21 +44,14 @@ class _PageState extends State<Page> {
                   'Match ${items[index]['match']}: ${items[index]['teamnum']}'),
               subtitle: Text('Here is a second line ${items[index]['side']}'),
               onTap: () {
+                Navigator.pushNamed(context, '/teams', arguments: {
+                  'teamnum': items[index]['teamnum'],
+                  'side': items[index]['side'],
+                  'match': items[index]['match']
+                });
                 // bluealliance.TBARequest.getTeams().then((value) => print(value
                 //     .first
                 //     .nickname)); // TODO: Make this actually do something (like open a new page
-                showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                          title: Text('Alert'),
-                          content: Text('This is an alert $index'),
-                          actions: [
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ],
-                        ));
               });
         },
       ),

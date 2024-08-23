@@ -28,7 +28,6 @@ class TBARequest {
       currPage++;
       res = await getRequest(sprintf(builder, [TBABaseURI, currPage]));
       json = jsonDecode(res);
-      print(currPage);
     }
 
     if (save) {

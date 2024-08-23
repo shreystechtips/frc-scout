@@ -4,91 +4,73 @@ import '../helper/appdata.dart' as appdata;
 import '../helper/constants.dart' as constants;
 import 'dart:convert';
 
-class Page extends StatefulWidget {
+class Page extends StatelessWidget {
   final appdata.ScreenData screendata;
-  const Page({super.key, required this.screendata});
+  final TextEditingController txtQuery = TextEditingController();
+  final GlobalKey<RefreshIndicatorState> indicator =
+      GlobalKey<RefreshIndicatorState>();
 
-  @override
-  State<Page> createState() => _PageState();
-}
+  Page({super.key, required this.screendata});
 
-class _PageState extends State<Page> {
-  late List<dynamic> items;
-  late List<dynamic> showItems;
-  TextEditingController txtQuery = TextEditingController();
-  final indicator = GlobalKey<RefreshIndicatorState>();
-
-  @override
-  void initState() {
-    items = jsonDecode(
-        widget.screendata.prefs.getString(constants.TEAM_KEY, def: '[]'));
-    showItems = items;
-    super.initState();
+  List<dynamic> getItems() {
+    return jsonDecode(
+        screendata.prefs.getString(constants.TEAM_KEY, def: '[]'));
   }
 
-  void search(String query) {
-    query = query.trim();
+  List<dynamic> searchItems(List<dynamic> items, String query) {
+    query = query.trim().toLowerCase();
     if (query.isEmpty) {
-      showItems = items;
-      setState(() {});
-      return;
+      return items;
     }
-
-    query = query.toLowerCase();
-    showItems = items.where((element) {
+    return items.where((element) {
       return element['team_number'].toString().toLowerCase().contains(query) ||
           element['nickname'].toLowerCase().contains(query);
     }).toList();
-    setState(() {});
   }
 
-  Future<void> onRefresh(BuildContext context) {
-    if (context.mounted) {
-      return Future.delayed(const Duration(milliseconds: 0), () async {
-        bool repsonse = false;
-        await showDialog(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-                  title: const Text('Notice'),
-                  content: const Text(
-                      'Do you really want to refresh, this may take a bit'),
-                  actions: [
-                    TextButton(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        repsonse = true;
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('Cancel'),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ));
-        if (repsonse) {
-          await bluealliance.TBARequest.getTeams(
-              save: true,
-              prefs: widget.screendata.prefs,
-              key: constants.TEAM_KEY);
-          setState(() {
-            items = jsonDecode(widget.screendata.prefs
-                .getString(constants.TEAM_KEY, def: '[]'));
-            showItems = items;
-          });
-        }
-      });
+  Future<void> onRefresh(BuildContext context) async {
+    bool response = false;
+
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Notice'),
+              content: const Text(
+                  'Do you really want to refresh, this may take a bit'),
+              actions: [
+                TextButton(
+                  child: const Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    response = true;
+                  },
+                ),
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ));
+    if (response) {
+      await bluealliance.TBARequest.getTeams(
+          save: true, prefs: screendata.prefs, key: constants.TEAM_KEY);
     }
-    return Future.value();
   }
 
   @override
   Widget build(BuildContext context) {
+    List<dynamic> items = getItems();
+    List<dynamic> showItems = items;
+    final arguments = (ModalRoute.of(context)?.settings.arguments ??
+        <String, dynamic>{}) as Map;
+
     return Scaffold(
       body: Column(children: <Widget>[
         TextFormField(
           controller: txtQuery,
-          onChanged: search,
+          onChanged: (query) {
+            showItems = searchItems(items, query);
+          },
           decoration: InputDecoration(
             hintText: "Search",
             prefixIcon: const Icon(Icons.search),
@@ -96,7 +78,7 @@ class _PageState extends State<Page> {
               icon: const Icon(Icons.clear),
               onPressed: () {
                 txtQuery.text = '';
-                search(txtQuery.text);
+                showItems = items;
               },
             ),
           ),
@@ -119,14 +101,12 @@ class _PageState extends State<Page> {
                         title: Text(
                             '${showItems[index]['team_number']}: ${showItems[index]['nickname']}'),
                         onTap: () {
-                          // bluealliance.TBARequest.getTeams().then((value) => print(value
-                          //     .first
-                          //     .nickname)); // TODO: Make this actually do something (like open a new page
                           showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
                                     title: const Text('Alert'),
-                                    content: Text('This is an alert $index'),
+                                    content: Text(
+                                        'This is an alert $index,\n ${arguments["teamnum"]}'),
                                     actions: [
                                       TextButton(
                                         child: const Text('OK'),
