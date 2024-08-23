@@ -48,7 +48,3 @@ class TBARequest {
     }
   }
 }
-
-void test() {
-  print(dotenv.env['TBA_KEY']);
-}

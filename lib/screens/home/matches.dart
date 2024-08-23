@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../helper/bluealliance.dart' as bluealliance;
-import '../helper/appdata.dart' as appdata;
+import '../../helper/bluealliance.dart' as bluealliance;
+import '../../helper/appdata.dart' as appdata;
 
 class Page extends StatefulWidget {
-  final appdata.AppData prefs;
-  const Page({super.key, required this.prefs});
+  final appdata.ScreenData screendata;
+  const Page({super.key, required this.screendata});
 
   @override
   State<Page> createState() => _PageState();
@@ -15,7 +15,7 @@ class _PageState extends State<Page> {
 
   void _incrementCounter() {
     setState(() {
-      widget.prefs.clear();
+      widget.screendata.prefs.clear();
       _counter++;
     });
   }

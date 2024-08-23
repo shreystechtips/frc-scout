@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'pages/matches.dart' as matches;
+import 'screens/home/matches.dart' as matches;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'helper/appdata.dart' as appdata;
 import 'helper/constants.dart' as constants;
 import 'helper/bluealliance.dart' as bluealliance;
-import 'pages/teamselection.dart' as teamselection;
+import 'screens/teamselection.dart' as teamselection;
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -15,17 +15,19 @@ Future main() async {
         save: true, prefs: prefs, key: constants.TEAM_KEY);
   }
 
+  final screendata = appdata.ScreenData(prefs: prefs);
+
   runApp(MyApp(
-    prefs: prefs,
+    screendata: screendata,
   ));
 }
 
 class MyApp extends StatefulWidget {
-  appdata.AppData prefs;
+  final appdata.ScreenData screendata;
   @override
   State<MyApp> createState() => _PageState();
 
-  MyApp({super.key, required this.prefs});
+  const MyApp({super.key, required this.screendata});
 }
 
 class _PageState extends State<MyApp> {
@@ -56,9 +58,9 @@ class _PageState extends State<MyApp> {
   Widget build(BuildContext context) {
     final List<Widget> pages = <Widget>[
       matches.Page(
-        prefs: widget.prefs,
+        screendata: widget.screendata,
       ),
-      teamselection.Page(prefs: widget.prefs),
+      teamselection.Page(screendata: widget.screendata),
       const Icon(
         Icons.chat,
         size: 150,

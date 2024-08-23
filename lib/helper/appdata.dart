@@ -9,10 +9,10 @@ class AppData {
 
   String getString(String key, {String def = ''}) =>
       prefs.getString(key) ?? def;
-  int getInt(String key) => prefs.getInt(key) ?? 0;
-  double getDouble(String key) => prefs.getDouble(key) ?? 0.0;
-  bool getBool(String key) => prefs.getBool(key) ?? false;
-  List<dynamic> getList(String key) => prefs.getStringList(key) ?? [];
+  int? getInt(String key) => prefs.getInt(key);
+  double? getDouble(String key) => prefs.getDouble(key);
+  bool? getBool(String key) => prefs.getBool(key);
+  List<dynamic>? getList(String key) => prefs.getStringList(key);
 
   void setString(String key, String value) => prefs.setString(key, value);
   void setInt(String key, int value) => prefs.setInt(key, value);
@@ -25,4 +25,11 @@ class AppData {
     prefs.clear();
     print('cleared');
   }
+}
+
+class ScreenData {
+  AppData prefs;
+  ScreenData({
+    required this.prefs,
+  });
 }
