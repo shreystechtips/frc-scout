@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../helper/bluealliance.dart' as bluealliance;
 import '../../helper/appdata.dart' as appdata;
 
@@ -44,10 +45,12 @@ class _PageState extends State<Page> {
                   'Match ${items[index]['match']}: ${items[index]['teamnum']}'),
               subtitle: Text('Here is a second line ${items[index]['side']}'),
               onTap: () {
-                Navigator.pushNamed(context, '/teams', arguments: {
+                context.push('/teams', extra: {
                   'teamnum': items[index]['teamnum'],
                   'side': items[index]['side'],
-                  'match': items[index]['match']
+                  'match': items[index]['match'],
+                  'nextPath': '/',
+                  'senderPath': '/'
                 });
                 // bluealliance.TBARequest.getTeams().then((value) => print(value
                 //     .first
@@ -58,6 +61,7 @@ class _PageState extends State<Page> {
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
+        heroTag: null,
         child: const Icon(Icons.add),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../helper/bluealliance.dart' as bluealliance;
 import '../helper/appdata.dart' as appdata;
 import '../helper/constants.dart' as constants;
@@ -101,6 +102,13 @@ class Page extends StatelessWidget {
                         title: Text(
                             '${showItems[index]['team_number']}: ${showItems[index]['nickname']}'),
                         onTap: () {
+                          context.go(arguments['nextPath'] ?? '/', extra: {});
+                          // });
+                          // context.push(arguments['nextPath'] ?? '/', extra: {
+                          //   'teamnum': showItems[index]['team_number'],
+                          //   'teamname': showItems[index]['nickname'],
+                          //   'nextPath': '/teams'
+                          // });
                           showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
@@ -122,6 +130,7 @@ class Page extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: (() => indicator.currentState?.show()),
         tooltip: 'Refresh',
+        heroTag: null,
         child: const Icon(Icons.refresh),
       ),
     );

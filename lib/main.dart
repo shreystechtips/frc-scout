@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/home/matches.dart' as matches;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
+import 'screens/home/matches.dart' as matches;
 import 'helper/appdata.dart' as appdata;
 import 'helper/constants.dart' as constants;
 import 'helper/bluealliance.dart' as bluealliance;
@@ -49,10 +50,6 @@ class _PageState extends State<MyApp> {
       icon: Icon(Icons.leaderboard),
       label: 'Rankings',
     ),
-    // BottomNavigationBarItem(
-    //   icon: Icon(Icons.edit_note),
-    //   label: 'Pit Notes',
-    // )
   ];
 
   @override
@@ -68,63 +65,40 @@ class _PageState extends State<MyApp> {
       ),
     ];
 
-    // Scaffold scaffold = Scaffold(
-    //     appBar: AppBar(
-    //       title: const Text('FRC Scout'),
-    //     ),
-    //     body: Center(
-    //       child: pages.elementAt(_selectedIndex), //New
-    //     ),
-    //     bottomNavigationBar: BottomNavigationBar(
-    //         currentIndex: _selectedIndex,
-    //         onTap: _onItemTapped,
-    //         items: _barItems));
+    bottombarnav.BottomBarNav nav = bottombarnav.BottomBarNav(
+        pages: pages,
+        barItems: _barItems,
+        onItemTapped: _onItemTapped,
+        selectedIndex: _selectedIndex,
+        title: "FRC Scout");
 
-    // bottombarnav.BottomBarNav nav = bottombarnav.BottomBarNav(
-    //   pages: pages,
-    //   barItems: _barItems,
-    //   onItemTapped: _onItemTapped,
-    //   selectedIndex: _selectedIndex,
-    //   title: "FRC Scout");
+    final GoRouter _router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => nav,
+        ),
+        GoRoute(
+          path: '/teams',
+          builder: (context, state) => Scaffold(
+            appBar: AppBar(
+              title: const Text('FRC Scout'),
+            ),
+            body: teamselection.Page(screendata: widget.screendata),
+          ),
+        ),
+      ],
+    );
 
-    return MaterialApp(
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-        ),
-        themeMode: ThemeMode.system,
-        initialRoute: '/',
-        // home: nav.build(context),
-        routes: {
-          '/': (BuildContext context) => Scaffold(
-                appBar: AppBar(
-                  title: const Text('FRC Scout'),
-                ),
-                body: Center(
-                  child: pages.elementAt(_selectedIndex), //New
-                ),
-                bottomNavigationBar: BottomNavigationBar(
-                    currentIndex: _selectedIndex,
-                    onTap: _onItemTapped,
-                    items: _barItems),
-              ),
-          '/teams': (BuildContext context) => Scaffold(
-                appBar: AppBar(
-                  title: const Text('FRC Scout'),
-                ),
-                body: teamselection.Page(screendata: widget.screendata),
-              )
-        }
-        // routes: <String, WidgetBuilder>{
-        //   '/': (BuildContext context) =>
-        //       teamselection.Page(screendata: widget.screendata),
-        //   // (BuildContext context) => nav.build(context),
-        //   '/teams': (BuildContext context) =>
-        //       teamselection.Page(screendata: widget.screendata),
-        // },
-        // home: nav.build(context),
-        );
+    return MaterialApp.router(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
+      themeMode: ThemeMode.system,
+      routerConfig: _router,
+    );
   }
 }
