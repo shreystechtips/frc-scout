@@ -5,17 +5,32 @@ import '../helper/appdata.dart' as appdata;
 import '../helper/constants.dart' as constants;
 import 'dart:convert';
 
-class Page extends StatelessWidget {
+class Page extends StatefulWidget {
   final appdata.ScreenData screendata;
+
+  const Page({super.key, required this.screendata});
+
+  @override
+  PageState createState() => PageState();
+}
+
+class PageState extends State<Page> {
   final TextEditingController txtQuery = TextEditingController();
   final GlobalKey<RefreshIndicatorState> indicator =
       GlobalKey<RefreshIndicatorState>();
+  List<dynamic> items = [];
+  List<dynamic> showItems = [];
 
-  Page({super.key, required this.screendata});
+  @override
+  void initState() {
+    super.initState();
+    items = getItems();
+    showItems = items;
+  }
 
   List<dynamic> getItems() {
     return jsonDecode(
-        screendata.prefs.getString(constants.TEAM_KEY, def: '[]'));
+        widget.screendata.prefs.getString(constants.TEAM_KEY, def: '[]'));
   }
 
   List<dynamic> searchItems(List<dynamic> items, String query) {
@@ -54,14 +69,17 @@ class Page extends StatelessWidget {
             ));
     if (response) {
       await bluealliance.TBARequest.getTeams(
-          save: true, prefs: screendata.prefs, key: constants.TEAM_KEY);
+          save: true, prefs: widget.screendata.prefs, key: constants.TEAM_KEY);
+      setState(() {
+        items = getItems();
+        showItems = items;
+      });
+      indicator.currentState?.show();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> items = getItems();
-    List<dynamic> showItems = items;
     final arguments = (ModalRoute.of(context)?.settings.arguments ??
         <String, dynamic>{}) as Map;
 
@@ -70,7 +88,9 @@ class Page extends StatelessWidget {
         TextFormField(
           controller: txtQuery,
           onChanged: (query) {
-            showItems = searchItems(items, query);
+            setState(() {
+              showItems = searchItems(items, query);
+            });
           },
           decoration: InputDecoration(
             hintText: "Search",
@@ -78,8 +98,10 @@ class Page extends StatelessWidget {
             suffixIcon: IconButton(
               icon: const Icon(Icons.clear),
               onPressed: () {
-                txtQuery.text = '';
-                showItems = items;
+                setState(() {
+                  txtQuery.text = '';
+                  showItems = items;
+                });
               },
             ),
           ),
@@ -103,12 +125,6 @@ class Page extends StatelessWidget {
                             '${showItems[index]['team_number']}: ${showItems[index]['nickname']}'),
                         onTap: () {
                           context.go(arguments['nextPath'] ?? '/', extra: {});
-                          // });
-                          // context.push(arguments['nextPath'] ?? '/', extra: {
-                          //   'teamnum': showItems[index]['team_number'],
-                          //   'teamname': showItems[index]['nickname'],
-                          //   'nextPath': '/teams'
-                          // });
                           showDialog(
                               context: context,
                               builder: (context) => AlertDialog(

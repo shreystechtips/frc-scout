@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
-import 'screens/home/matches.dart' as matches;
+import 'package:frc_scout/screens/home/home_bottombar.dart' as home;
 import 'helper/appdata.dart' as appdata;
 import 'helper/constants.dart' as constants;
 import 'helper/bluealliance.dart' as bluealliance;
 import 'screens/teamselection.dart' as teamselection;
-import 'widgets/bottombarnav.dart' as bottombarnav;
 
 Future main() async {
   await dotenv.load(fileName: ".env");
@@ -33,56 +32,20 @@ class MyApp extends StatefulWidget {
 }
 
 class _PageState extends State<MyApp> {
-  int _selectedIndex = 0;
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  static const List<BottomNavigationBarItem> _barItems =
-      <BottomNavigationBarItem>[
-    BottomNavigationBarItem(
-      icon: Icon(Icons.smart_toy),
-      label: 'Matches',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.leaderboard),
-      label: 'Rankings',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = <Widget>[
-      matches.Page(
-        screendata: widget.screendata,
-      ),
-      teamselection.Page(screendata: widget.screendata),
-      const Icon(
-        Icons.chat,
-        size: 150,
-      ),
-    ];
-
-    bottombarnav.BottomBarNav nav = bottombarnav.BottomBarNav(
-        pages: pages,
-        barItems: _barItems,
-        onItemTapped: _onItemTapped,
-        selectedIndex: _selectedIndex,
-        title: "FRC Scout");
-
-    final GoRouter _router = GoRouter(
+    final GoRouter router = GoRouter(
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) => nav,
+          builder: (context, state) =>
+              home.HomeNav(screendata: widget.screendata),
         ),
         GoRoute(
           path: '/teams',
           builder: (context, state) => Scaffold(
             appBar: AppBar(
-              title: const Text('FRC Scout'),
+              title: const Text('Team Selection'),
             ),
             body: teamselection.Page(screendata: widget.screendata),
           ),
@@ -93,12 +56,18 @@ class _PageState extends State<MyApp> {
     return MaterialApp.router(
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          },
+        ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
       ),
       themeMode: ThemeMode.system,
-      routerConfig: _router,
+      routerConfig: router,
     );
   }
 }

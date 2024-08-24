@@ -4,15 +4,11 @@ class BottomBarNav extends StatefulWidget {
   final List<Widget> pages;
   final List<BottomNavigationBarItem> barItems;
   final String title;
-  final Function(int) onItemTapped;
-  final int selectedIndex;
 
   const BottomBarNav({
     Key? key,
     required this.pages,
     required this.barItems,
-    required this.onItemTapped,
-    required this.selectedIndex,
     required this.title,
   }) : super(key: key);
 
@@ -21,17 +17,24 @@ class BottomBarNav extends StatefulWidget {
 }
 
 class _BottomBarNavState extends State<BottomBarNav> {
+  int selectedIndex = 0;
+  void onItemTapped(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: widget.pages[widget.selectedIndex],
+      body: widget.pages[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: widget.barItems,
-        currentIndex: widget.selectedIndex,
-        onTap: widget.onItemTapped,
+        currentIndex: selectedIndex,
+        onTap: onItemTapped,
       ),
     );
   }
