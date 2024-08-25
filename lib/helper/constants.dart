@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: constant_identifier_names
 
-String TEAM_KEY = 'TEAM_KEYS';
-String APP_NAME = 'FRC Scout';
+const String TEAM_DATA_KEY = 'TEAM_KEYS';
+const String APP_NAME = 'FRC Scout';

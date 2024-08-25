@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 class BottomBarNav extends StatefulWidget {
   final List<Widget> pages;
   final List<BottomNavigationBarItem> barItems;
-  final String title;
+  final String? title;
+  final AppBar? appBar;
 
   const BottomBarNav({
     Key? key,
     required this.pages,
     required this.barItems,
-    required this.title,
+    this.title,
+    this.appBar,
   }) : super(key: key);
 
   @override
@@ -27,9 +29,6 @@ class _BottomBarNavState extends State<BottomBarNav> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
       body: widget.pages[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: widget.barItems,

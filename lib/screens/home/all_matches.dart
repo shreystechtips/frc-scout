@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../helper/bluealliance.dart' as bluealliance;
-import '../../helper/appdata.dart' as appdata;
+import 'package:frc_scout/helper/appdata.dart' as appdata;
+import 'package:frc_scout/helper/constants.dart' as constants;
+import 'package:frc_scout/widgets/confirmdialog.dart' as confirmdialog;
 
 class Page extends StatefulWidget {
   final appdata.ScreenData screendata;
@@ -12,22 +13,51 @@ class Page extends StatefulWidget {
 }
 
 class _PageState extends State<Page> {
-  void resetAppData() {
-    setState(() {
-      widget.screendata.prefs.clear();
+  void resetAppData() async {
+    bool response = await confirmdialog.acceptAction(
+        context, 'Do you really want to reset the app data?');
+    if (response) {
+      setState(() {
+        widget.screendata.prefs.clear();
+      });
+    }
+  }
+
+  void newMatch() {
+    context.push('/team-selection', extra: {
+      'nextPath': '/match-page',
+      'senderPath': '/',
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final GoRouter state = GoRouter.of(context);
     final items = List<Map<String, dynamic>>.generate(
         10000,
         (i) =>
             {'teamnum': "Team name go brr - $i", 'side': 'red 2', 'match': i});
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(widget.title),
-      // ),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () async {
+            bool repsonse = await confirmdialog.acceptAction(context, "bro");
+            if (repsonse) {
+              state.go('/');
+            }
+          },
+        ),
+        title: const Text(constants.APP_NAME),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: resetAppData,
+            tooltip: 'Reset App Data!',
+          ),
+        ],
+        automaticallyImplyLeading: false,
+      ),
       body: ListView.builder(
         itemCount: items.length,
         prototypeItem: const ListTile(
@@ -42,7 +72,7 @@ class _PageState extends State<Page> {
                   'Match ${items[index]['match']}: ${items[index]['teamnum']}'),
               subtitle: Text('Here is a second line ${items[index]['side']}'),
               onTap: () {
-                context.push('/teams', extra: {
+                context.push('/team-selection', extra: {
                   'teamnum': items[index]['teamnum'],
                   'side': items[index]['side'],
                   'match': items[index]['match'],
@@ -55,11 +85,17 @@ class _PageState extends State<Page> {
               });
         },
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: resetAppData,
+      //   tooltip: 'Reset App Data!',
+      //   heroTag: null,
+      //   child: const Icon(Icons.delete_forever),
+      // ),
       floatingActionButton: FloatingActionButton(
-        onPressed: resetAppData,
-        tooltip: 'Reset App Data!',
+        onPressed: newMatch,
+        tooltip: 'New Match',
         heroTag: null,
-        child: const Icon(Icons.delete_forever),
+        child: const Icon(Icons.add),
       ),
     );
   }

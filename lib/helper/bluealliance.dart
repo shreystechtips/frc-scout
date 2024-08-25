@@ -3,6 +3,7 @@ import 'package:http/http.dart';
 import 'dart:convert';
 import 'package:sprintf/sprintf.dart';
 import './appdata.dart' as appdata;
+import 'package:frc_scout/helper/constants.dart' as constants;
 
 // ignore: constant_identifier_names
 const String TBABaseURI = 'https://www.thebluealliance.com/api/v3';
@@ -13,25 +14,32 @@ class TBARequest {
     'X-TBA-Auth-Key': dotenv.env['TBA_KEY'].toString(),
   };
 
-  static Future<List<Map<String, dynamic>>> getTeams(
+  static Future<Map<int, Map<String, dynamic>>> getTeams(
       {bool save = false, appdata.AppData? prefs, String? key}) async {
-    List<Map<String, dynamic>> teams = [];
+    Map<int, Map<String, dynamic>> teams = {};
     int currPage = 0;
     String builder = '%s/teams/%d/simple';
     String res = await getRequest(sprintf(builder, [TBABaseURI, currPage]));
     List<dynamic> json = jsonDecode(res);
     while (json.isNotEmpty) {
       for (var team in json) {
-        teams.add(
-            {'team_number': team['team_number'], 'nickname': team['nickname']});
+        teams[team['team_number'] as int] = {
+          'team_number': team['team_number'],
+          'nickname': team['nickname']
+        };
       }
       currPage++;
       res = await getRequest(sprintf(builder, [TBABaseURI, currPage]));
       json = jsonDecode(res);
     }
+    Map<String, dynamic> teamData = Map.fromEntries(teams.entries
+        .map((entry) => MapEntry(entry.key.toString(), entry.value)));
 
     if (save) {
-      prefs!.setString(key!, jsonEncode(teams));
+      String encodedTeams = jsonEncode(
+        teamData,
+      );
+      prefs!.setString(key!, encodedTeams);
     }
 
     return teams;
@@ -45,5 +53,28 @@ class TBARequest {
     } else {
       throw "Unable to retrieve data.";
     }
+  }
+
+  static Map<int, Map<String, dynamic>> parsedTeamData = {};
+
+  static Map<int, Map<String, dynamic>> getTeamsFromPrefs(appdata.AppData prefs,
+      [bool forceReload = false]) {
+    if (parsedTeamData.isEmpty || forceReload) {
+      String teamData = prefs.getString(constants.TEAM_DATA_KEY, def: '{}');
+      parsedTeamData = customDecoder(teamData);
+    }
+    return parsedTeamData;
+  }
+
+  static Map<int, Map<String, dynamic>> customDecoder(String json) {
+    Map<String, dynamic> jsonData = jsonDecode(json);
+    Map<int, Map<String, dynamic>> teams = {};
+    for (var team in jsonData.entries) {
+      teams[int.parse(team.key)] = {
+        'team_number': team.value['team_number'],
+        'nickname': team.value['nickname']
+      };
+    }
+    return teams;
   }
 }

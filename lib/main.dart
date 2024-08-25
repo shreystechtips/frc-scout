@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:frc_scout/screens/home/home_bottombar.dart' as home;
+import 'package:frc_scout/screens/matchpage/match_bottombar.dart' as match;
 import 'helper/appdata.dart' as appdata;
 import 'helper/constants.dart' as constants;
 import 'helper/bluealliance.dart' as bluealliance;
@@ -11,9 +12,9 @@ Future main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   appdata.AppData prefs = await appdata.AppData.create();
-  if (prefs.getString(constants.TEAM_KEY) == '') {
+  if (prefs.getString(constants.TEAM_DATA_KEY) == '') {
     bluealliance.TBARequest.getTeams(
-        save: true, prefs: prefs, key: constants.TEAM_KEY);
+        save: true, prefs: prefs, key: constants.TEAM_DATA_KEY);
   }
 
   final screendata = appdata.ScreenData(prefs: prefs);
@@ -42,7 +43,7 @@ class _PageState extends State<MyApp> {
               home.HomeNav(screendata: widget.screendata),
         ),
         GoRoute(
-          path: '/teams',
+          path: '/team-selection',
           builder: (context, state) => Scaffold(
             appBar: AppBar(
               title: const Text('Team Selection'),
@@ -50,6 +51,12 @@ class _PageState extends State<MyApp> {
             body: teamselection.Page(screendata: widget.screendata),
           ),
         ),
+        GoRoute(
+            path: '/match-page',
+            builder: (context, state) => PopScope(
+                  canPop: false,
+                  child: match.HomeNav(screendata: widget.screendata),
+                ))
       ],
     );
 

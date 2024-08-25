@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../helper/bluealliance.dart' as bluealliance;
-import '../helper/appdata.dart' as appdata;
-import '../helper/constants.dart' as constants;
-import 'dart:convert';
+import 'package:frc_scout/helper/appdata.dart' as appdata;
+import 'package:frc_scout/helper/constants.dart' as constants;
+import 'package:frc_scout/widgets/confirmdialog.dart' as confirmdialog;
 
 class Page extends StatefulWidget {
   final appdata.ScreenData screendata;
@@ -18,8 +18,8 @@ class PageState extends State<Page> {
   final TextEditingController txtQuery = TextEditingController();
   final GlobalKey<RefreshIndicatorState> indicator =
       GlobalKey<RefreshIndicatorState>();
-  List<dynamic> items = [];
-  List<dynamic> showItems = [];
+  Map<int, Map<String, dynamic>> items = {};
+  Map<int, Map<String, dynamic>> showItems = {};
 
   @override
   void initState() {
@@ -28,48 +28,33 @@ class PageState extends State<Page> {
     showItems = items;
   }
 
-  List<dynamic> getItems() {
-    return jsonDecode(
-        widget.screendata.prefs.getString(constants.TEAM_KEY, def: '[]'));
+  Map<int, Map<String, dynamic>> getItems([bool forceReload = true]) {
+    return bluealliance.TBARequest.getTeamsFromPrefs(
+        widget.screendata.prefs, true);
   }
 
-  List<dynamic> searchItems(List<dynamic> items, String query) {
+  Map<int, Map<String, dynamic>> searchItems(
+      Map<int, Map<String, dynamic>> items, String query) {
     query = query.trim().toLowerCase();
     if (query.isEmpty) {
       return items;
     }
-    return items.where((element) {
-      return element['team_number'].toString().toLowerCase().contains(query) ||
-          element['nickname'].toLowerCase().contains(query);
-    }).toList();
+
+    return Map.from(items)
+      ..removeWhere((k, v) {
+        return !v['team_number'].toString().toLowerCase().contains(query) &&
+            !v['nickname'].toLowerCase().contains(query);
+      });
   }
 
   Future<void> onRefresh(BuildContext context) async {
-    bool response = false;
-
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-              title: const Text('Notice'),
-              content: const Text(
-                  'Do you really want to refresh, this may take a bit'),
-              actions: [
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    response = true;
-                  },
-                ),
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ));
+    bool response = await confirmdialog.acceptAction(
+        context, 'Do you really want to refresh, this may take a bit');
     if (response) {
       await bluealliance.TBARequest.getTeams(
-          save: true, prefs: widget.screendata.prefs, key: constants.TEAM_KEY);
+          save: true,
+          prefs: widget.screendata.prefs,
+          key: constants.TEAM_DATA_KEY);
       setState(() {
         items = getItems();
         showItems = items;
@@ -80,8 +65,8 @@ class PageState extends State<Page> {
 
   @override
   Widget build(BuildContext context) {
-    final arguments = (ModalRoute.of(context)?.settings.arguments ??
-        <String, dynamic>{}) as Map;
+    final GoRouterState state = GoRouterState.of(context);
+    final Map<String, dynamic> arguments = state.extra as Map<String, dynamic>;
 
     return Scaffold(
       body: Column(children: <Widget>[
@@ -118,27 +103,18 @@ class PageState extends State<Page> {
                     title: Text("948 - Newport Robotics Group 948"),
                   ),
                   itemBuilder: (context, index) {
+                    var keys = showItems.keys.toList();
+                    Map<String, dynamic> val = showItems[keys[index]]!;
                     return ListTile(
                         visualDensity:
                             const VisualDensity(horizontal: 0, vertical: -4),
-                        title: Text(
-                            '${showItems[index]['team_number']}: ${showItems[index]['nickname']}'),
+                        title:
+                            Text('${val['team_number']}: ${val['nickname']}'),
                         onTap: () {
-                          context.go(arguments['nextPath'] ?? '/', extra: {});
-                          showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                    title: const Text('Alert'),
-                                    content: Text(
-                                        'This is an alert $index,\n ${arguments["teamnum"]}'),
-                                    actions: [
-                                      TextButton(
-                                        child: const Text('OK'),
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(),
-                                      ),
-                                    ],
-                                  ));
+                          context.push(arguments['nextPath'] ?? '/', extra: {
+                            'team_data': val,
+                            'senderPath': '/team-selection',
+                          });
                         });
                   },
                 )))
