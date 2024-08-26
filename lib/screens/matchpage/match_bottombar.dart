@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frc_scout/helper/appdata.dart' as appdata;
 import 'package:frc_scout/widgets/bottombarnav.dart' as bottombarnav;
-import 'package:frc_scout/screens/home/all_matches.dart' as matches;
+import 'package:frc_scout/screens/matchpage/match.dart' as match;
 import 'package:frc_scout/screens/home/all_rankings.dart' as rankings;
 import 'package:frc_scout/screens/home/all_pitnotes.dart' as pitnotes;
 import 'package:frc_scout/screens/teamselection.dart' as teamselection;
@@ -43,7 +43,7 @@ class _HomeNavState extends State<HomeNav> {
     final Map<String, dynamic> arguments = state.extra as Map<String, dynamic>;
     print(arguments);
     final List<Widget> pages = <Widget>[
-      matches.Page(
+      match.MatchPage(
         screendata: widget.screendata,
       ),
       rankings.Page(

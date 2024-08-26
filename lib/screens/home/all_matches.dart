@@ -32,22 +32,12 @@ class _PageState extends State<Page> {
 
   @override
   Widget build(BuildContext context) {
-    final GoRouter state = GoRouter.of(context);
     final items = List<Map<String, dynamic>>.generate(
         10000,
         (i) =>
             {'teamnum': "Team name go brr - $i", 'side': 'red 2', 'match': i});
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () async {
-            bool repsonse = await confirmdialog.acceptAction(context, "bro");
-            if (repsonse) {
-              state.go('/');
-            }
-          },
-        ),
         title: const Text(constants.APP_NAME),
         actions: [
           IconButton(
